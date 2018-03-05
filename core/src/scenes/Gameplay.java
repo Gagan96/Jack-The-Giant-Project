@@ -69,6 +69,10 @@ public class Gameplay implements Screen{
         for(int i=0;i<bgs.length;i++){
             if ((bgs[i].getY() - bgs[i].getHeight() /2f)>mainCamera.position.y){
                 float newPosition = bgs[i].getHeight() + lastYPosition;
+
+                bgs[i].setPosition(0,-newPosition);
+                lastYPosition = Math.abs(newPosition);
+
             }
         }
     }
