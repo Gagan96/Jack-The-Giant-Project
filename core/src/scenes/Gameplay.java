@@ -44,7 +44,7 @@ public class Gameplay implements Screen{
     }
 
     void moveCamera() {
-        mainCamera.position.y -= 1;
+        mainCamera.position.y -= 10;
 
     }
 
@@ -54,8 +54,8 @@ public class Gameplay implements Screen{
         for(int i=0;i<bgs.length;i++){
             bgs[i] = new Sprite(new Texture("Backgrounds/Game BG.png"));
             bgs[i].setPosition(0,-(i*bgs[i].getHeight()));
-            lastYPosition = Math.abs(bgs[i].getY());
         }
+        lastYPosition = Math.abs(bgs[bgs.length-1].getY());
 
     }
 
@@ -66,8 +66,9 @@ public class Gameplay implements Screen{
     }
 
     void checkBackgroundsOutOfBounds(){
+
         for(int i=0;i<bgs.length;i++){
-            if ((bgs[i].getY() - bgs[i].getHeight() /2f)>mainCamera.position.y){
+            if ((bgs[i].getY() - bgs[i].getHeight() /2f -5)>mainCamera.position.y){
                 float newPosition = bgs[i].getHeight() + lastYPosition;
 
                 bgs[i].setPosition(0,-newPosition);
@@ -75,6 +76,15 @@ public class Gameplay implements Screen{
 
             }
         }
+        /*
+        if ((bgs[bgs.length-1].getY() - bgs[bgs.length-1].getHeight() /2f)>mainCamera.position.y){
+            float newPosition = bgs[bgs.length-1].getHeight() + lastYPosition;
+
+            bgs[bgs.length-1].setPosition(0,-newPosition);
+            lastYPosition = Math.abs(newPosition);
+
+        }
+        */
     }
 
     @Override
