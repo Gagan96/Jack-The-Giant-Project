@@ -1,6 +1,7 @@
 package scenes;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,6 +16,7 @@ import com.mygdx.game.GameMain;
 
 import Clouds.CloudsController;
 import helpers.GameInfo;
+import player.Player;
 
 /**
  * Created by iam9091107 on 3/5/18.
@@ -35,6 +37,7 @@ public class Gameplay implements Screen{
     private float lastYPosition;
 
     private CloudsController cloudsController;
+    private Player player;
 
     public Gameplay(GameMain game){
         this.game = game;
@@ -47,18 +50,37 @@ public class Gameplay implements Screen{
         box2DCamera = new OrthographicCamera();
         box2DCamera.setToOrtho(false, GameInfo.WIDTH / GameInfo.PPM,
                 GameInfo.HEIGHT / GameInfo.PPM);
-        box2DCamera.position.set(GameInfo.WIDTH / 2f, GameInfo.HEIGHT / 2f, 0);
+        box2DCamera.position.set(GameInfo.WIDTH / 2, GameInfo.HEIGHT / 2, 0);
 
-        debugRenderer = new Box2DDebugRenderer();
+        //debugRenderer = new Box2DDebugRenderer();
         world = new World(new Vector2(0,-9.8f),true);
 
         cloudsController  = new CloudsController(world);
+
+        player = cloudsController.positionThePlayerAtStart(player);
         createBackgrounds();
     }
 
+    public void handleInput(float dt){
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+            player.setWalking(true);
+            player.movePlayer(-2);
+        }
+        else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+            //player.setWalking(true);
+            player.movePlayer(2);
+        }
+        else {
+            player.setWalking(false);
+        }
+    }
+
     void update(float dt){
-        moveCamera();
+        handleInput(dt);
+       // moveCamera();
         checkBackgroundsOutOfBounds();
+        cloudsController.setCameraY(mainCamera.position.y);
+        cloudsController.createAndArrangeNewClouds();
     }
 
     void moveCamera() {
@@ -110,12 +132,16 @@ public class Gameplay implements Screen{
         game.getBatch().begin();
         drawBackgrounds();
         cloudsController.drawClouds(game.getBatch());
+        player.drawPlayerIdle(game.getBatch());
         game.getBatch().end();
 
-        debugRenderer.render(world, box2DCamera.combined);
+//        debugRenderer.render(world, box2DCamera.combined);
 
         game.getBatch().setProjectionMatrix(mainCamera.combined);
         mainCamera.update();
+
+        player.updatePlayer();
+        world.step(Gdx.graphics.getDeltaTime(), 6, 2);
 
     }
 

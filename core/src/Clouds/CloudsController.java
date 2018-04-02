@@ -4,7 +4,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.Random;
+
 import helpers.GameInfo;
+import player.Player;
 
 /**
  * Created by gagan on 02/04/2018.
@@ -16,13 +19,20 @@ public class CloudsController {
     private Array<Cloud> clouds = new Array<Cloud>();
 
     private final float DISTANCE_BETWEEN_CLOUDS = 250f;
-    private float minX, maxX;
+    private float minX;
+    private float maxX;
+
+    private float lastCloudPositionY;
+    private float cameraY;
+
+    private Random random = new Random();
+
     public CloudsController(World world) {
         this.world = world;
         minX = GameInfo.WIDTH/2f-110;
-        minX = GameInfo.WIDTH/2f+110;
+        maxX = GameInfo.WIDTH/2f+110;
         createClouds();
-        positionClouds();
+        positionClouds(true);
     }
 
     private void createClouds() {
@@ -45,26 +55,84 @@ public class CloudsController {
 
     }
 
-    private void positionClouds() {
-
-        // first cloud must not be a "dark cloud"
+    private void positionClouds(boolean firstTimeArranging) {
         while (clouds.get(0).getCloudName()==("Dark Cloud")) {
             clouds.shuffle();
         }
-        float positionY = GameInfo.HEIGHT / 2f;
-        float tempX = GameInfo.WIDTH / 2f;
-        for (Cloud c : clouds) {
-            c.setSpritePosition(tempX, positionY);
-            positionY -= DISTANCE_BETWEEN_CLOUDS;
+        float positionY = 0;
+
+        if (firstTimeArranging){
+            positionY = GameInfo.HEIGHT/2f;
         }
+        else {
+            positionY = lastCloudPositionY;
+        }
+
+        float controlX = 0;
+        for (Cloud c : clouds) {
+
+            if (c.getX() == 0 && c.getY() == 0) {
+
+                float tempX = 0;
+                if (controlX == 0) {
+                    tempX = randomBetweenNumbers(maxX - 60, maxX);
+                    controlX = 1;
+                    c.setDrawLeft(false);
+                } else if (controlX == 1) {
+                    tempX = randomBetweenNumbers(minX + 60, minX);
+                    controlX = 0;
+                    c.setDrawLeft(true);
+                }
+                c.setSpritePosition(tempX, positionY);
+                positionY -= DISTANCE_BETWEEN_CLOUDS;
+                lastCloudPositionY = positionY;
+            }
+        }
+
     }
 
     public void drawClouds(SpriteBatch batch) {
-        for(Cloud cloud : clouds) {
-            batch.draw(cloud, cloud.getX() - cloud.getWidth() / 2f, cloud.getY() - cloud.getHeight() / 2f);
+
+        for (Cloud c: clouds) {
+            if (c.isDrawLeft()){
+                batch.draw(c,
+                        c.getX() - c.getWidth()/2 - 20,
+                        c.getY() - c.getHeight()/2);
+            }
+            else {
+                batch.draw(c,
+                        c.getX() - c.getWidth()/2 + 10,
+                        c.getY() - c.getHeight()/2);
+            }
         }
     }
 
+    public void createAndArrangeNewClouds(){
 
+        for (int i=0; i<clouds.size; i++){
+            if ( (clouds.get(i).getY() - GameInfo.HEIGHT/2 - 15) > cameraY ){
+                //cloud is out of bounds --> remove it
+                clouds.get(i).getTexture().dispose();
+                clouds.removeIndex(i);
+            }
+        }
+        if (clouds.size == 4){
+            createClouds();
+            positionClouds(false);
+        }
+    }
 
+    public void setCameraY (float cameraYPos){
+        this.cameraY = cameraYPos;
+    }
+
+    private float randomBetweenNumbers(float min, float max) {
+        return random.nextFloat() * (max - min) + min;
+    }
+
+    public Player positionThePlayerAtStart(Player player){
+        player = new Player(world, clouds.get(0).getX(),clouds.get(0).getY() + 100);
+
+        return player;
+    }
 }
