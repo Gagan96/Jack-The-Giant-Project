@@ -26,9 +26,6 @@ public class Highscores implements Screen {
 
     private HighscoresButtons btns;
 
-
-
-    //constructor
     public Highscores(GameMain game) {
         this.game = game;
 

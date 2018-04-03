@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.Random;
 
+import collectables.Collectable;
 import helpers.GameInfo;
 import player.Player;
 
@@ -17,6 +18,7 @@ public class CloudsController {
 
     private World world;
     private Array<Cloud> clouds = new Array<Cloud>();
+    private Array<Collectable> collectables = new Array<Collectable>();
 
     private final float DISTANCE_BETWEEN_CLOUDS = 250f;
     private float minX;
@@ -89,6 +91,12 @@ public class CloudsController {
             }
         }
 
+        //borrar esto, es una prueba
+        Collectable c1 = new Collectable(world, "Coin");
+        c1.setCollectablePosition(clouds.get(1).getX(),clouds.get(1).getY() + 40);
+
+        collectables.add(c1);
+
     }
 
     public void drawClouds(SpriteBatch batch) {
@@ -104,6 +112,15 @@ public class CloudsController {
                         c.getX() - c.getWidth()/2 + 10,
                         c.getY() - c.getHeight()/2);
             }
+        }
+
+    }
+
+    public void drawCollectables(SpriteBatch batch){
+        for (Collectable c :
+                collectables) {
+            c.updateCollectable();
+            batch.draw(c, c.getX(), c.getY());
         }
     }
 
@@ -130,9 +147,20 @@ public class CloudsController {
         return random.nextFloat() * (max - min) + min;
     }
 
-    public Player positionThePlayerAtStart(Player player){
-        player = new Player(world, clouds.get(0).getX(),clouds.get(0).getY() + 100);
+    public Player positionThePlayer(Player player){
+        player = new Player(world, clouds.get(0).getX(),clouds.get(0).getY() + 78);
 
         return player;
+    }
+
+    public void removeCollectables() {
+        for (int i=0;i<collectables.size;i++){
+            if (collectables.get(i).getFixture().getUserData()=="Remove"){
+
+                collectables.get(i).changeFilter();
+                collectables.get(i).getTexture().dispose();
+                collectables.removeIndex(i);
+            }
+        }
     }
 }

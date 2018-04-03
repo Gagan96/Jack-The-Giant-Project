@@ -9,6 +9,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -16,13 +21,14 @@ import com.mygdx.game.GameMain;
 
 import Clouds.CloudsController;
 import helpers.GameInfo;
+import huds.UIHud;
 import player.Player;
 
 /**
  * Created by iam9091107 on 3/5/18.
  */
 
-public class Gameplay implements Screen{
+public class Gameplay implements Screen, ContactListener{
 
     private GameMain game;
 
@@ -35,6 +41,7 @@ public class Gameplay implements Screen{
 
     private Sprite[] bgs;
     private float lastYPosition;
+    private UIHud hud;
 
     private CloudsController cloudsController;
     private Player player;
@@ -52,12 +59,14 @@ public class Gameplay implements Screen{
                 GameInfo.HEIGHT / GameInfo.PPM);
         box2DCamera.position.set(GameInfo.WIDTH / 2, GameInfo.HEIGHT / 2, 0);
 
-        //debugRenderer = new Box2DDebugRenderer();
+        debugRenderer = new Box2DDebugRenderer();
+        hud = new UIHud(game);
         world = new World(new Vector2(0,-9.8f),true);
+        world.setContactListener(this);
 
         cloudsController  = new CloudsController(world);
 
-        player = cloudsController.positionThePlayerAtStart(player);
+        player = cloudsController.positionThePlayer(player);
         createBackgrounds();
     }
 
@@ -132,14 +141,20 @@ public class Gameplay implements Screen{
         game.getBatch().begin();
         drawBackgrounds();
         cloudsController.drawClouds(game.getBatch());
+        cloudsController.drawCollectables(game.getBatch());
+
+
         player.drawPlayerIdle(game.getBatch());
         player.drawPlayerAnimation(game.getBatch());
         game.getBatch().end();
 
-//        debugRenderer.render(world, box2DCamera.combined);
+        debugRenderer.render(world, box2DCamera.combined);
 
         game.getBatch().setProjectionMatrix(mainCamera.combined);
         mainCamera.update();
+
+        game.getBatch().setProjectionMatrix(hud.getStage().getCamera().combined);
+        hud.getStage().draw();
 
         player.updatePlayer();
         world.step(Gdx.graphics.getDeltaTime(), 6, 2);
@@ -148,7 +163,7 @@ public class Gameplay implements Screen{
 
     @Override
     public void resize(int width, int height) {
-
+        gameViewport.update(width,height);
     }
 
     @Override
@@ -168,6 +183,49 @@ public class Gameplay implements Screen{
 
     @Override
     public void dispose() {
+
+    }
+
+    @Override
+    public void beginContact(Contact contact) {
+
+        Fixture body1, body2;
+
+        if (contact.getFixtureA().getUserData() == "Player"){
+            body1=contact.getFixtureA();
+            body2 = contact.getFixtureB();
+        }else {
+            body1=contact.getFixtureB();
+            body2 = contact.getFixtureA();
+        }
+
+        if(body1.getUserData() == "Player" && body2.getUserData() == "Coin"){
+            //collided with the coin
+            System.out.println("COIN");
+            body2.setUserData("Remove");
+            cloudsController.removeCollectables();
+        }
+
+        if(body1.getUserData() == "Player" && body2.getUserData() == "Life"){
+            //collided with the life
+            System.out.println("LIFE");
+            body2.setUserData("Remove");
+            cloudsController.removeCollectables();
+        }
+    }
+
+    @Override
+    public void endContact(Contact contact) {
+
+    }
+
+    @Override
+    public void preSolve(Contact contact, Manifold oldManifold) {
+
+    }
+
+    @Override
+    public void postSolve(Contact contact, ContactImpulse impulse) {
 
     }
 } // gameplay

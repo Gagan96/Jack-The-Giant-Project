@@ -60,29 +60,28 @@ public class Player extends Sprite {
         );
 
         FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 4f;
+        fixtureDef.density = 0f;
         fixtureDef.friction = 2f;
         fixtureDef.shape = shape;
+        fixtureDef.filter.categoryBits = GameInfo.PLAYER;
+        fixtureDef.filter.maskBits = GameInfo.DEFAULT | GameInfo.COLLECTABLE;
 
         Fixture fixture = body.createFixture(fixtureDef);
+        fixture.setUserData("Player");
         shape.dispose();
     }
 
     public void updatePlayer(){
 
         if (body.getLinearVelocity().x > 0){
-
             setPosition(
                     body.getPosition().x * GameInfo.PPM,
-                    body.getPosition().y * GameInfo.PPM
-            );
+                    body.getPosition().y * GameInfo.PPM);
         }
         else if (body.getLinearVelocity().x < 0){
             setPosition(
                     (body.getPosition().x - 0.3f) * GameInfo.PPM,
-                    body.getPosition().y * GameInfo.PPM
-            );
-
+                    body.getPosition().y * GameInfo.PPM);
         }
     }
 

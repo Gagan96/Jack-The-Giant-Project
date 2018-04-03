@@ -57,7 +57,7 @@ public class HighscoresButtons {
     private void createAndPositionUIElements() {
 
         backBtn = new ImageButton(new SpriteDrawable(new Sprite(
-                new Texture("Buttons/Options/Back.png"))));
+                new Texture("Buttons/Options Menu/Back.png"))));
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Fonts/blow.ttf"));
 
