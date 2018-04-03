@@ -63,7 +63,7 @@ public class Gameplay implements Screen{
 
     public void handleInput(float dt){
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            player.setWalking(true);
+           //player.setWalking(true);
             player.movePlayer(-2);
         }
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
@@ -133,6 +133,7 @@ public class Gameplay implements Screen{
         drawBackgrounds();
         cloudsController.drawClouds(game.getBatch());
         player.drawPlayerIdle(game.getBatch());
+        player.drawPlayerAnimation(game.getBatch());
         game.getBatch().end();
 
 //        debugRenderer.render(world, box2DCamera.combined);

@@ -38,7 +38,7 @@ public class Player extends Sprite {
 
         createBody();
 
-//        playerAtlas = new TextureAtlas("Player Animation/Player Animation.atlas");
+        playerAtlas = new TextureAtlas("Player Animation/Player Animation.png.atlas");
     }
 
 
@@ -90,15 +90,15 @@ public class Player extends Sprite {
 
     public void movePlayer(float x){
 
-/*
+
         if (x < 0 && !this.isFlipX()){
             this.flip(true,false);
         }
         else if (x > 0 && this.isFlipX()){
             this.flip(true,false);
-        }*/
+        }
 
-
+        setWalking(true);
         body.setLinearVelocity(x, body.getLinearVelocity().y);
     }
 
@@ -106,17 +106,17 @@ public class Player extends Sprite {
 
     public void drawPlayerIdle (SpriteBatch batch){
 
-            /*if (!isWalking){
+            if (!isWalking){
                 batch.draw(this,
                     getX() + getWidth()/2 -10,
                     getY() - getHeight()/2 - 5
                 );
-            }*/
+            }
 
-        batch.draw(this,
+        /*batch.draw(this,
                 getX() + getWidth()/2 -10,
                 getY() - getHeight()/2 - 5
-        );
+        );*/
     }
 
 
@@ -140,9 +140,8 @@ public class Player extends Sprite {
 
             animation = new Animation(1/10f,  playerAtlas.getRegions());
             batch.draw((TextureRegion) animation.getKeyFrame(elapsedTime, true),
-                    getX() + getWidth()/2,
-                    getY() - getHeight()/2
-            );
+                    getX() + getWidth()/2f - 20,
+                    getY() - getHeight()/2f);
         }
 
     }
