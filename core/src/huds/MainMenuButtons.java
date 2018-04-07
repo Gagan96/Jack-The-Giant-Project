@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.GameMain;
 
 import helpers.GameInfo;
+import helpers.GameManager;
 import scenes.Gameplay;
 import scenes.Highscores;
 import scenes.Options;
@@ -81,7 +82,8 @@ public class MainMenuButtons {
         playBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                 game.setScreen(new Gameplay(game));
+                GameManager.getInstance().gameStartedFromMainMenu = true;
+                game.setScreen(new Gameplay(game));
             }
         });
 

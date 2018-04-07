@@ -21,6 +21,7 @@ import com.mygdx.game.GameMain;
 
 import Clouds.CloudsController;
 import helpers.GameInfo;
+import helpers.GameManager;
 import huds.UIHud;
 import player.Player;
 
@@ -45,6 +46,7 @@ public class Gameplay implements Screen, ContactListener{
 
     private CloudsController cloudsController;
     private Player player;
+    private boolean touchedForTheFirstTime;
 
     public Gameplay(GameMain game){
         this.game = game;
@@ -84,12 +86,26 @@ public class Gameplay implements Screen, ContactListener{
         }
     }
 
+    void checkForFirstTouch() {
+        if(!touchedForTheFirstTime) {
+            if(Gdx.input.justTouched()) {
+                touchedForTheFirstTime = true;
+                GameManager.getInstance().isPaused = false;
+            }
+        }
+    }
+
     void update(float dt){
-        handleInput(dt);
-       // moveCamera();
-        checkBackgroundsOutOfBounds();
-        cloudsController.setCameraY(mainCamera.position.y);
-        cloudsController.createAndArrangeNewClouds();
+        checkForFirstTouch();
+        if (!GameManager.getInstance().isPaused){
+            handleInput(dt);
+            moveCamera();
+            checkBackgroundsOutOfBounds();
+            cloudsController.setCameraY(mainCamera.position.y);
+            cloudsController.createAndArrangeNewClouds();
+            cloudsController.removeOffScreenCollectables();
+        }
+
     }
 
     void moveCamera() {
@@ -150,13 +166,14 @@ public class Gameplay implements Screen, ContactListener{
 
         debugRenderer.render(world, box2DCamera.combined);
 
-        game.getBatch().setProjectionMatrix(mainCamera.combined);
-        mainCamera.update();
-
         game.getBatch().setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
 
+        game.getBatch().setProjectionMatrix(mainCamera.combined);
+        mainCamera.update();
+
         player.updatePlayer();
+
         world.step(Gdx.graphics.getDeltaTime(), 6, 2);
 
     }
@@ -201,14 +218,14 @@ public class Gameplay implements Screen, ContactListener{
 
         if(body1.getUserData() == "Player" && body2.getUserData() == "Coin"){
             //collided with the coin
-            System.out.println("COIN");
+            hud.incrementCoins();
             body2.setUserData("Remove");
             cloudsController.removeCollectables();
         }
 
         if(body1.getUserData() == "Player" && body2.getUserData() == "Life"){
             //collided with the life
-            System.out.println("LIFE");
+            hud.incrementLifes();
             body2.setUserData("Remove");
             cloudsController.removeCollectables();
         }

@@ -85,18 +85,33 @@ public class CloudsController {
                     controlX = 0;
                     c.setDrawLeft(true);
                 }
+
                 c.setSpritePosition(tempX, positionY);
                 positionY -= DISTANCE_BETWEEN_CLOUDS;
                 lastCloudPositionY = positionY;
+
+                if(!firstTimeArranging && c.getCloudName() != "Dark Cloud"){
+                    int rand = random.nextInt(10);
+
+                    if(rand > 5){
+                        int randomCollectable = random.nextInt(2);
+                        if(randomCollectable == 0){
+                            //life
+                            Collectable collectable = new Collectable(world, "Life");
+                            collectable.setCollectablePosition(c.getX(),
+                                    c.getY()+40);
+                            collectables.add(collectable);
+                        } else {
+                            //coin
+                            Collectable collectable = new Collectable(world, "Coin");
+                            collectable.setCollectablePosition(c.getX(),
+                                    c.getY()+40);
+                            collectables.add(collectable);
+                        }
+                    }
+                }
             }
         }
-
-        //borrar esto, es una prueba
-        Collectable c1 = new Collectable(world, "Coin");
-        c1.setCollectablePosition(clouds.get(1).getX(),clouds.get(1).getY() + 40);
-
-        collectables.add(c1);
-
     }
 
     public void drawClouds(SpriteBatch batch) {
@@ -136,6 +151,16 @@ public class CloudsController {
         if (clouds.size == 4){
             createClouds();
             positionClouds(false);
+        }
+    }
+
+    public void removeOffScreenCollectables(){
+        for (int i=0; i<collectables.size; i++) {
+            if(collectables.get(i).getY() - GameInfo.HEIGHT / 2f - 15 > cameraY){
+                collectables.get(i).getTexture().dispose();
+                collectables.removeIndex(i);
+                System.out.println("Collectable removed");
+            }
         }
     }
 

@@ -21,6 +21,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.GameMain;
 
 import helpers.GameInfo;
+import helpers.GameManager;
+import scenes.Gameplay;
 import scenes.MainMenu;
 
 /**
@@ -50,6 +52,16 @@ public class UIHud {
         stage = new Stage(gameViewport, game.getBatch());
 
         Gdx.input.setInputProcessor(stage);
+
+        if (GameManager.getInstance().gameStartedFromMainMenu){
+            //this is the first time starting the game, set initial values
+            GameManager.getInstance().gameStartedFromMainMenu = false;
+
+            GameManager.getInstance().lifeScore = 2;
+            GameManager.getInstance().coinScore = 0;
+            GameManager.getInstance().score = 0;
+
+        }
 
         createLabels();
         createImgs();
@@ -116,9 +128,9 @@ public class UIHud {
 
         BitmapFont font = generator.generateFont(parameters);
 
-        coinLabel = new Label("x0", new Label.LabelStyle(font, Color.WHITE));
-        lifeLabel = new Label("x2", new Label.LabelStyle(font, Color.WHITE));
-        scoreLabel = new Label("100", new Label.LabelStyle(font, Color.WHITE));
+        coinLabel = new Label("x" + GameManager.getInstance().coinScore, new Label.LabelStyle(font, Color.WHITE));
+        lifeLabel = new Label("x"+ GameManager.getInstance().lifeScore, new Label.LabelStyle(font, Color.WHITE));
+        scoreLabel = new Label(String.valueOf(GameManager.getInstance().score), new Label.LabelStyle(font, Color.WHITE));
 
 /* Posicionament d'elements ubstituit per taules, en el constructor
         coinLabel.setPosition(GameInfo.WIDTH/2, GameInfo.HEIGHT/2 - 120);
@@ -145,6 +157,10 @@ public class UIHud {
 
                 //Panell de pausa:
                 createPausePanel();
+                if (!GameManager.getInstance().isPaused){
+                    GameManager.getInstance().isPaused = true;
+                    createPausePanel();
+                }
             }
         });
 
@@ -171,6 +187,7 @@ public class UIHud {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 removePausePanel();
+                GameManager.getInstance().isPaused = false;
             }
         });
 
@@ -194,6 +211,22 @@ public class UIHud {
         pausePanel.remove();
     }
 
+    public void incrementCoins() {
+        GameManager.getInstance().coinScore++;
+        coinLabel.setText("x" +  GameManager.getInstance().coinScore);
+        incrementScore(200);
+    }
+
+    public void incrementLifes() {
+        GameManager.getInstance().lifeScore++;
+        lifeLabel.setText("x" + GameManager.getInstance().lifeScore);
+        incrementScore(300);
+    }
+
+    public void incrementScore(int score) {
+        GameManager.getInstance().score += score;
+        scoreLabel.setText(String.valueOf( GameManager.getInstance().score));
+    }
 
     public Stage getStage() {
         return stage;
