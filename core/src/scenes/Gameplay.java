@@ -47,6 +47,7 @@ public class Gameplay implements Screen, ContactListener{
     private CloudsController cloudsController;
     private Player player;
     private boolean touchedForTheFirstTime;
+    private float lastPlayerY;
 
     public Gameplay(GameMain game){
         this.game = game;
@@ -69,6 +70,7 @@ public class Gameplay implements Screen, ContactListener{
         cloudsController  = new CloudsController(world);
 
         player = cloudsController.positionThePlayer(player);
+
         createBackgrounds();
     }
 
@@ -91,6 +93,7 @@ public class Gameplay implements Screen, ContactListener{
             if(Gdx.input.justTouched()) {
                 touchedForTheFirstTime = true;
                 GameManager.getInstance().isPaused = false;
+                lastPlayerY = player.getY();
             }
         }
     }
@@ -104,6 +107,8 @@ public class Gameplay implements Screen, ContactListener{
             cloudsController.setCameraY(mainCamera.position.y);
             cloudsController.createAndArrangeNewClouds();
             cloudsController.removeOffScreenCollectables();
+            checkPlayerBounds();
+            countScore();
         }
 
     }
@@ -140,6 +145,48 @@ public class Gameplay implements Screen, ContactListener{
                 lastYPosition = Math.abs(newPosition);
 
             }
+        }
+    }
+
+    void checkPlayerBounds(){
+        if(player.getY() - GameInfo.HEIGHT / 2f - player.getHeight() / 2f
+                > mainCamera.position.y){
+            if (!player.isDead()){
+                playedDied();
+            }
+        }
+
+        if(player.getY() - GameInfo.HEIGHT / 2f + player.getHeight() / 2f
+                > mainCamera.position.y){
+            System.out.printf("Player out of bound");
+            GameManager.getInstance().isPaused = true;
+        }
+
+        if (player.getX() - 25 > GameInfo.WIDTH || player.getX() + 60 < 0){
+            System.out.println("Player out of bound RIghT");
+            GameManager.getInstance().isPaused = true;
+        }
+    }
+
+    void countScore(){
+        if (lastPlayerY>player.getY()){
+            hud.incrementScore(1);
+            lastPlayerY = player.getY();
+        }
+    }
+
+    void playedDied(){
+        GameManager.getInstance().isPaused = true;
+        hud.decrementLife();
+
+        player.setDead(true);
+
+        player.setPosition(1000,1000);
+        if (GameManager.getInstance().lifeScore<0){
+
+            game.setScreen(new MainMenu(game));
+        }else {
+            game.setScreen(new Gameplay(game));
         }
     }
 
@@ -228,6 +275,10 @@ public class Gameplay implements Screen, ContactListener{
             hud.incrementLifes();
             body2.setUserData("Remove");
             cloudsController.removeCollectables();
+        }
+
+        if(body1.getUserData() == "Player" && body2.getUserData() == "Dark Cloud"){
+            if (!player.isDead()) playedDied();
         }
     }
 

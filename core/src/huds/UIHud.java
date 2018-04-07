@@ -228,6 +228,13 @@ public class UIHud {
         scoreLabel.setText(String.valueOf( GameManager.getInstance().score));
     }
 
+    public void decrementLife(){
+        GameManager.getInstance().lifeScore--;
+        if (GameManager.getInstance().lifeScore>=0){
+            lifeLabel.setText("x"+GameManager.getInstance().lifeScore);
+        }
+    }
+
     public Stage getStage() {
         return stage;
     }
