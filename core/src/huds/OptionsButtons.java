@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.GameMain;
 
 import helpers.GameInfo;
+import helpers.GameManager;
 import scenes.MainMenu;
 
 /**
@@ -69,15 +70,13 @@ public class OptionsButtons {
         sign = new Image(
                 new Texture("Buttons/Options Menu/Check Sign.png"));
 
+        backBtn.setPosition(17, 17, Align.bottomLeft);
 
         easy.setPosition(  GameInfo.WIDTH/2, GameInfo.HEIGHT/2 + 40, Align.center);
         medium.setPosition(GameInfo.WIDTH/2, GameInfo.HEIGHT/2 - 40, Align.center);
         hard.setPosition(  GameInfo.WIDTH/2, GameInfo.HEIGHT/2 - 120, Align.center);
 
-        backBtn.setPosition(17, 17, Align.bottomLeft);
-
-        //borrar despues
-        sign.setPosition(GameInfo.WIDTH/2 + 76 , medium.getY()+13, Align.bottomLeft);
+        positionTheSign();
 
     }
 
@@ -111,6 +110,45 @@ public class OptionsButtons {
         });
 
     }
+
+    void positionTheSign() {
+
+        if(GameManager.getInstance().gameData.isEasyDifficulty()){
+            sign.setPosition(GameInfo.WIDTH / 2 +76, easy.getY() +13, Align.bottomLeft);
+        }
+
+        if(GameManager.getInstance().gameData.isMediumDifficulty()){
+            sign.setPosition(GameInfo.WIDTH / 2 +76, medium.getY() +13, Align.bottomLeft);
+        }
+
+        if(GameManager.getInstance().gameData.isHardDifficulty()){
+            sign.setPosition(GameInfo.WIDTH / 2 +76, hard.getY() +13, Align.bottomLeft);
+        }
+    }
+
+    void changeDifficulty(int difficulty){
+        switch (difficulty){
+            case 0:
+                GameManager.getInstance().gameData.setEasyDifficulty(true);
+                GameManager.getInstance().gameData.setMediumDifficulty(false);
+                GameManager.getInstance().gameData.setHardDifficulty(false);
+                break;
+            case 1:
+                GameManager.getInstance().gameData.setEasyDifficulty(false);
+                GameManager.getInstance().gameData.setMediumDifficulty(true);
+                GameManager.getInstance().gameData.setHardDifficulty(false);
+                break;
+            case 2:
+                GameManager.getInstance().gameData.setEasyDifficulty(false);
+                GameManager.getInstance().gameData.setMediumDifficulty(false);
+                GameManager.getInstance().gameData.setHardDifficulty(true);
+                break;
+
+        }
+
+        GameManager.getInstance().saveData();
+    }
+
     public Stage getStage() {
         return stage;
     }

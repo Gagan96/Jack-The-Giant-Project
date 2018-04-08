@@ -3,6 +3,7 @@ package scenes;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -53,6 +54,11 @@ public class Gameplay implements Screen, ContactListener{
     private boolean touchedForTheFirstTime;
     private float lastPlayerY;
 
+    private float cameraSpeed = 10;
+    private float maxSpeed = 10;
+    private float acceleration = 10;
+
+    private Sound coinSound, lifeSound;
     public Gameplay(GameMain game){
         this.game = game;
 
@@ -76,6 +82,10 @@ public class Gameplay implements Screen, ContactListener{
         player = cloudsController.positionThePlayer(player);
 
         createBackgrounds();
+        setCameraSpeed();
+
+        coinSound = Gdx.audio.newSound(Gdx.files.internal("Sounds/Coin Sound.wav"));
+        lifeSound = Gdx.audio.newSound(Gdx.files.internal("Sounds/Life Sound.wav"));
     }
 
     public void handleInput(float dt){
@@ -88,6 +98,18 @@ public class Gameplay implements Screen, ContactListener{
             player.movePlayer(2);
         }
         else {
+            player.setWalking(false);
+        }
+    }
+
+    void handleInputAndroid(){
+        if(Gdx.input.isTouched()) {
+            if(Gdx.input.getX() > GameInfo.WIDTH / 2){
+                player.movePlayer(2);
+            }else {
+                player.movePlayer(-2);
+            }
+        }else {
             player.setWalking(false);
         }
     }
@@ -106,7 +128,8 @@ public class Gameplay implements Screen, ContactListener{
         checkForFirstTouch();
         if (!GameManager.getInstance().isPaused){
             handleInput(dt);
-            moveCamera();
+            handleInputAndroid();
+            moveCamera(dt);
             checkBackgroundsOutOfBounds();
             cloudsController.setCameraY(mainCamera.position.y);
             cloudsController.createAndArrangeNewClouds();
@@ -117,9 +140,31 @@ public class Gameplay implements Screen, ContactListener{
 
     }
 
-    void moveCamera() {
-        mainCamera.position.y -= 3;
+    void moveCamera(float delta) {
+        mainCamera.position.y -= cameraSpeed*delta;
 
+        cameraSpeed += acceleration * delta;
+
+        if (cameraSpeed>maxSpeed){
+            cameraSpeed = maxSpeed;
+        }
+    }
+
+    void setCameraSpeed() {
+        if(GameManager.getInstance().gameData.isEasyDifficulty()){
+            cameraSpeed = 80;
+            maxSpeed = 100;
+        }
+
+        if(GameManager.getInstance().gameData.isMediumDifficulty()){
+            cameraSpeed = 100;
+            maxSpeed = 120;
+        }
+
+        if(GameManager.getInstance().gameData.isHardDifficulty()){
+            cameraSpeed = 120;
+            maxSpeed = 140;
+        }
     }
 
     void createBackgrounds(){
@@ -192,6 +237,8 @@ public class Gameplay implements Screen, ContactListener{
         if (GameManager.getInstance().lifeScore<0){
 
 
+            GameManager.getInstance().checkForNewHighscores();
+
             hud.createGameOverPanel();
 
             RunnableAction run = new RunnableAction();
@@ -245,7 +292,7 @@ public class Gameplay implements Screen, ContactListener{
         player.drawPlayerAnimation(game.getBatch());
         game.getBatch().end();
 
-        debugRenderer.render(world, box2DCamera.combined);
+        //debugRenderer.render(world, box2DCamera.combined);
 
         game.getBatch().setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
@@ -284,6 +331,14 @@ public class Gameplay implements Screen, ContactListener{
     @Override
     public void dispose() {
 
+        world.dispose();
+        for (int i=0;i<bgs.length;i++){
+            bgs[i].getTexture().dispose();
+        }
+        player.getTexture().dispose();
+        debugRenderer.dispose();
+        coinSound.dispose();
+        lifeSound.dispose();
     }
 
     @Override
@@ -302,6 +357,7 @@ public class Gameplay implements Screen, ContactListener{
         if(body1.getUserData() == "Player" && body2.getUserData() == "Coin"){
             //collided with the coin
             hud.incrementCoins();
+            coinSound.play();
             body2.setUserData("Remove");
             cloudsController.removeCollectables();
         }
@@ -309,6 +365,7 @@ public class Gameplay implements Screen, ContactListener{
         if(body1.getUserData() == "Player" && body2.getUserData() == "Life"){
             //collided with the life
             hud.incrementLifes();
+            lifeSound.play();
             body2.setUserData("Remove");
             cloudsController.removeCollectables();
         }
