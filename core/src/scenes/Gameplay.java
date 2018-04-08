@@ -15,6 +15,10 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.GameMain;
@@ -156,15 +160,17 @@ public class Gameplay implements Screen, ContactListener{
             }
         }
 
-        if(player.getY() - GameInfo.HEIGHT / 2f + player.getHeight() / 2f
-                > mainCamera.position.y){
-            System.out.printf("Player out of bound");
-            GameManager.getInstance().isPaused = true;
+        if(player.getY() + GameInfo.HEIGHT / 2f + player.getHeight() / 2f
+                < mainCamera.position.y){
+            if (!player.isDead()){
+                playedDied();
+            }
         }
 
         if (player.getX() - 25 > GameInfo.WIDTH || player.getX() + 60 < 0){
-            System.out.println("Player out of bound RIghT");
-            GameManager.getInstance().isPaused = true;
+            if (!player.isDead()){
+                playedDied();
+            }
         }
     }
 
@@ -182,11 +188,39 @@ public class Gameplay implements Screen, ContactListener{
         player.setDead(true);
 
         player.setPosition(1000,1000);
+
         if (GameManager.getInstance().lifeScore<0){
 
-            game.setScreen(new MainMenu(game));
+
+            hud.createGameOverPanel();
+
+            RunnableAction run = new RunnableAction();
+            run.setRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    game.setScreen(new MainMenu(game));
+                }
+            });
+            SequenceAction sa = new SequenceAction();
+            sa.addAction(Actions.delay(3f));
+            sa.addAction(Actions.delay(1f));
+            sa.addAction(run);
+
+            hud.getStage().addAction(sa);
         }else {
-            game.setScreen(new Gameplay(game));
+            RunnableAction run = new RunnableAction();
+            run.setRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    game.setScreen(new Gameplay(game));
+                }
+            });
+            SequenceAction sa = new SequenceAction();
+            sa.addAction(Actions.delay(3f));
+            sa.addAction(Actions.delay(1f));
+            sa.addAction(run);
+
+            hud.getStage().addAction(sa);
         }
     }
 
@@ -215,6 +249,8 @@ public class Gameplay implements Screen, ContactListener{
 
         game.getBatch().setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
+
+        hud.getStage().act();
 
         game.getBatch().setProjectionMatrix(mainCamera.combined);
         mainCamera.update();

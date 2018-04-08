@@ -8,6 +8,7 @@ import java.util.Random;
 
 import collectables.Collectable;
 import helpers.GameInfo;
+import helpers.GameManager;
 import player.Player;
 
 /**
@@ -97,10 +98,20 @@ public class CloudsController {
                         int randomCollectable = random.nextInt(2);
                         if(randomCollectable == 0){
                             //life
-                            Collectable collectable = new Collectable(world, "Life");
-                            collectable.setCollectablePosition(c.getX(),
-                                    c.getY()+40);
-                            collectables.add(collectable);
+
+                            if (GameManager.getInstance().lifeScore<2){
+                                Collectable collectable = new Collectable(world, "Life");
+                                collectable.setCollectablePosition(c.getX(),
+                                        c.getY()+40);
+                                collectables.add(collectable);
+                            }else {
+                                Collectable collectable = new Collectable(world, "Coin");
+                                collectable.setCollectablePosition(c.getX(),
+                                        c.getY()+40);
+                                collectables.add(collectable);
+                            }
+
+
                         } else {
                             //coin
                             Collectable collectable = new Collectable(world, "Coin");
